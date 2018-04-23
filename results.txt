@@ -1,0 +1,4 @@
+ts=20	bs=1	neu=20	af=sigmoid	opt=sgd	epoch=10	loss=0.031691094615962354	accu=70.0	elapsed=880.4495334625244
+ts=20	bs=1	neu=20	af=sigmoid	opt=sgd	epoch=20	loss=0.02074089739471674	accu=80.0	elapsed=1560.5063438415527
+ts=20	bs=1	neu=20	af=sigmoid	opt=sgd	epoch=30	loss=0.015891600635950454	accu=65.0	elapsed=2259.182929992676
+ts=20	bs=1	neu=20	af=sigmoid	opt=sgd	epoch=40	loss=0.014679966407129541	accu=65.0	elapsed=2981.708288192749
