@@ -68,6 +68,7 @@ def sorting_function(a,b):
         return -1
 
 def main(args):
+    print(args[1])
     logging.info('parsing angles file')
     angles=config.parse_csv('./a.csv')
     positions=config.parse_csv('./iX.csv')
@@ -84,6 +85,18 @@ def main(args):
                             (loss,accu)=run_experiment(angles,positions,ts, bs, neu, af, opt, epoch)
                             elapsed_time=(time()-start_time)*1000
                             line_storage.append(ExperimentResult(ts,bs,neu,af,opt,epoch,loss,accu,elapsed_time))
+                            if (args[1]=="test"):
+                                break
+                        if (args[1]=="test"):
+                            break
+                    if (args[1]=="test"):
+                        break
+                if (args[1]=="test"):
+                    break
+            if (args[1]=="test"):
+                break
+        if (args[1]=="test"):
+            break
     
     line_storage.sort(key = lambda x: x.accu)
     with open('./results.txt','w') as results:
