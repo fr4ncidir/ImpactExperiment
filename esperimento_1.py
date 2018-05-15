@@ -24,8 +24,10 @@
 #import numpy as np
 #import matplotlib.pyplot as plt
 
+from keras.callbacks import EarlyStopping, History
 from keras.layers import Dense,Dropout
 from keras.models import Sequential
+from keras import metrics
 from sklearn.model_selection import train_test_split
 from numpy import array
 import logging
@@ -37,31 +39,45 @@ logging.basicConfig(format='%(levelname)s %(asctime)-15s %(message)s',level=logg
 
 def run_experiment(angles,positions,test_size, batch_size, neurons, activation, optimization, epoch):
 
-    angles_training, angles_test, pos_training, pos_test =train_test_split(angles, positions, test_size= test_size, random_state=42)
+    angles_training, angles_test, pos_training, pos_test = train_test_split(
+                     angles,                # matlab generated angles
+                     positions,             # corresponding coordinates
+                     test_size=test_size,   # % of the dataset for prediction
+                     random_state=42)       # seed for random number generator
 
     # create model
     model = Sequential()
-    model.add(Dense(neurons, input_dim=4, activation=activation))
-    model.add(Dense(2, activation=activation))
+    model.add(Dense(neurons,                    # neuron number of first level
+                    input_dim=4,                # 4 angles -> 4 inputs
+                    activation=activation)      # activation function: sigmoid, tanh, relu
+                )
+    model.add(Dense(2,                          # needing 2 outputs, the second level only has 2 neurons
+        activation=activation)                  # activation function of the second level
+        )
 
     #compile model
-    model.compile(loss='mean_squared_error', optimizer=optimization, metrics=['mse','mse'])
+    model.compile(loss='mean_squared_error',            # loss function for training evolution
+                  optimizer=optimization)               # optimization fuction: sgd, adagrad, adam
 
     #fit model
 
-    history=model.fit(array(angles_training), array(pos_training), batch_size= batch_size, epochs=epoch, verbose=0, validation_split=0.1, callbacks=[EarlyStopping(monitor='val_loss')])
-
-    #config.plot_history(history)
+    mylog = {}
+    history = model.fit(array(angles_training),         # dataset part for training (features: angles)
+                        array(pos_training),            # dataset part for training (labels: impact position coord)
+                        batch_size=batch_size,          # dataset subsets cardinality
+                        epochs=epoch,                   # subset repetition in training
+                        verbose=0,
+                        validation_split=0.1,           # % subset of the training set for validation (leave-one-out,k-fold)
+                        callbacks=[EarlyStopping(monitor='val_loss',verbose=True),History()])
 
     # evaluate the model
-    scores = model.evaluate(array(angles_test), array(pos_test),batch_size=batch_size)
-    print(scores)
-    loss=scores[1]
-    accu=scores[2]*100
-    #print("\nTest loss: " , scores[0])
-    #print("\nTest accuracy: %.2f%%" %  (scores[1]*100))
+    scores = model.evaluate(array(angles_test),         # dataset part for test (features: angles)
+                            array(pos_test),            # dataset control of predictions: labels 
+                            batch_size=None)            # evaluation batch (None=default=32)
+    
+    print("\nTest loss: {}".format(scores))
 
-    return (loss,accu)
+    return scores
     
 
 def main(args):
@@ -78,12 +94,12 @@ def main(args):
                 for epoch in range(10,100,20):
                     logging.info('running experiment with ts={}\tbs={}\tneu={}\taf={}\topt={}\tepoch={}'.format(ts,bs,neu,af,opt,epoch))
                     start_time=time()
-                    (loss,accu)=run_experiment(angles,positions,ts, bs, neu, af, opt, epoch)
+                    loss=run_experiment(angles,positions,ts, bs, neu, af, opt, epoch)
                     elapsed_time=(time()-start_time)*1000
-                    line_storage.append(ExperimentResult(ts,bs,neu,af,opt,epoch,loss,accu,elapsed_time))
+                    line_storage.append(ExperimentResult(ts,bs,neu,af,opt,epoch,loss,elapsed_time))
        
     
-    line_storage.sort(key = lambda x: x.accu, reverse=True)
+    line_storage.sort(key = lambda x: x.loss)
     with open('./results.txt','w') as results:
         for item in line_storage:
             results.write(item.toString())

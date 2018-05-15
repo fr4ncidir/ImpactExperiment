@@ -26,7 +26,7 @@
 class ExperimentResult:
     """A class containing the result of an experiment"""
     
-    def __init__(self,ts,bs,neu,af,opt,epoch,loss,accu,elapsed_time):
+    def __init__(self,ts,bs,neu,af,opt,epoch,loss,elapsed_time):
         self._ts = ts
         self._bs = bs
         self._neu = neu
@@ -34,7 +34,6 @@ class ExperimentResult:
         self._opt = opt
         self._epoch = epoch
         self._loss = loss
-        self._accu = accu
         self._elapsed_time = elapsed_time
         
     @property
@@ -66,15 +65,11 @@ class ExperimentResult:
         return self._loss
         
     @property
-    def accu(self):
-        return self._accu
-        
-    @property
     def elapsed_time(self):
         return self._elapsed_time
         
     def toString(self):
-        return "ts={}\tbs={}\tneu={}\taf={}\topt={}\tepoch={}\tloss={}\taccu={}\telapsed={}\n".format(
+        return "ts={}\tbs={}\tneu={}\taf={}\topt={}\tepoch={}\tloss={}\telapsed={}\n".format(
             self.ts,
             self.bs,
             self.neu,
@@ -82,5 +77,4 @@ class ExperimentResult:
             self.opt,
             self.epoch,
             self.loss,
-            self.accu,
             self.elapsed_time)
