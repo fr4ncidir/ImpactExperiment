@@ -74,7 +74,7 @@ class ExperimentResult:
         return self._elapsed_time
         
     def toString(self):
-        return "ts={}\tbs={}\tneu={}\taf={}\topt={}\tepoch={}\tloss={}\taccu={}\telapsed={}".format(
+        return "ts={}\tbs={}\tneu={}\taf={}\topt={}\tepoch={}\tloss={}\taccu={}\telapsed={}\n".format(
             self.ts,
             self.bs,
             self.neu,

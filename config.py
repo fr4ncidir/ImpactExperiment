@@ -25,66 +25,67 @@ import csv
 
 
 def parse_csv (path_to_file) :
-	with open(path_to_file, 'r') as matlabfile :
-		reader=csv.reader(matlabfile)
-		output=[]
-		for row in reader:
-			item=[]
-			for element in row[0].split(' '):
-				item.append(float(element))
-			output.append(item)
-	return output
+    with open(path_to_file, 'r') as matlabfile :
+        reader=csv.reader(matlabfile)
+        output=[]
+        for row in reader:
+            item=[]
+            for element in row[0].split(' '):
+                item.append(float(element))
+            output.append(item)
+    return output
 	
 def configurations ():
-	import numpy as np
-	import os
-	import warnings
-	import tensorflow as tf
-	import random as rn
-	from keras import backend as bK
-	
-	os.environ['PYTHONHASHSEED'] = '0'
-	# The below is necessary for starting Numpy generated random numbers
-	# in a well-defined initial state.
-	np.random.seed(42)
-	
-	# The below is necessary for starting core Python generated random numbers
-	# in a well-defined state.
-	rn.seed(12345)
+    import numpy as np
+    import os
+    import warnings
+    import tensorflow as tf
+    import random as rn
+    from keras import backend as bK
 
-	# Force TensorFlow to use single thread.
-	# Multiple threads are a potential source of
-	# non-reproducible results.
-	# For further details, see: https://stackoverflow.com/questions/42022950/which-seeds-have-to-be-set-where-to-realize-100-reproducibility-of-training-res
-	session_conf = tf.ConfigProto(intra_op_parallelism_threads=1, inter_op_parallelism_threads=1)
+    os.environ['PYTHONHASHSEED'] = '0'
+    # The below is necessary for starting Numpy generated random numbers
+    # in a well-defined initial state.
+    np.random.seed(42)
 
-	# The below tf.set_random_seed() will make random number generation
-	# in the TensorFlow backend have a well-defined initial state.
-	# For further details, see: https://www.tensorflow.org/api_docs/python/tf/set_random_seed
-	tf.set_random_seed(1234)
-	sess = tf.Session(graph=tf.get_default_graph(), config=session_conf)
-	bK.set_session(sess)
+    # The below is necessary for starting core Python generated random numbers
+    # in a well-defined state.
+    rn.seed(12345)
 
-	os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' #Hide messy TensorFlow warnings
-	warnings.filterwarnings("ignore") #Hide messy Numpy warnings	
+    # Force TensorFlow to use single thread.
+    # Multiple threads are a potential source of
+    # non-reproducible results.
+    # For further details, see: https://stackoverflow.com/questions/42022950/which-seeds-have-to-be-set-where-to-realize-100-reproducibility-of-training-res
+    session_conf = tf.ConfigProto(intra_op_parallelism_threads=1, inter_op_parallelism_threads=1)
+
+    # The below tf.set_random_seed() will make random number generation
+    # in the TensorFlow backend have a well-defined initial state.
+    # For further details, see: https://www.tensorflow.org/api_docs/python/tf/set_random_seed
+    tf.set_random_seed(1234)
+    sess = tf.Session(graph=tf.get_default_graph(), config=session_conf)
+    bK.set_session(sess)
+
+    os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' #Hide messy TensorFlow warnings
+    warnings.filterwarnings("ignore") #Hide messy Numpy warnings	
 
 def plot_history (history):
-	import matplotlib.pyplot as plt
-	# summarize history for accuracy
-	plt.plot(history.history['acc'])
-	plt.plot(history.history['val_acc'])
-	plt.title('model accuracy')
-	plt.ylabel('accuracy')
-	plt.xlabel('epoch')
-	plt.legend(['train', 'test'], loc='upper left')
-	plt.show()
-	# summarize history for loss
-	plt.plot(history.history['loss'])
-	plt.plot(history.history['val_loss'])
-	plt.title('model loss')
-	plt.ylabel('loss')
-	plt.xlabel('epoch')
-	plt.legend(['train', 'test'], loc='upper left')
-	plt.show()		
-			
-			
+    import matplotlib.pyplot as plt
+    # summarize history for accuracy
+    plt.plot(history.history['acc'])
+    plt.plot(history.history['val_acc'])
+    plt.title('model accuracy')
+    plt.ylabel('accuracy')
+    plt.xlabel('epoch')
+    plt.legend(['train', 'test'], loc='upper left')
+    plt.show()
+    # summarize history for loss
+    plt.plot(history.history['loss'])
+    plt.plot(history.history['val_loss'])
+    plt.title('model loss')
+    plt.ylabel('loss')
+    plt.xlabel('epoch')
+    plt.legend(['train', 'test'], loc='upper left')
+    plt.show()
+
+
+#def myaccuracy(mytrue,myprediction):
