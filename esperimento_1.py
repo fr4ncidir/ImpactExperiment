@@ -24,21 +24,27 @@
 #import numpy as np
 #import matplotlib.pyplot as plt
 
-from keras.callbacks import EarlyStopping, History
+from keras.callbacks import History
 from keras.layers import Dense,Dropout
 from keras.models import Sequential
 from keras import metrics
 from sklearn.model_selection import train_test_split
-from numpy import array
+from numpy import array,linalg
 import logging
 import config 
 from experiment_result import *
 from time import time
+from custom_callbacks import EarlyStopping
 
 logging.basicConfig(format='%(levelname)s %(asctime)-15s %(message)s',level=logging.INFO)
+early_stop = []
+
+def my_handler(stop_value):
+    early_stop.append(stop_value)
+    
 
 def run_experiment(angles,positions,test_size, batch_size, neurons, activation, optimization, epoch):
-
+    global early_stop
     angles_training, angles_test, pos_training, pos_test = train_test_split(
                      angles,                # matlab generated angles
                      positions,             # corresponding coordinates
@@ -62,22 +68,27 @@ def run_experiment(angles,positions,test_size, batch_size, neurons, activation, 
     #fit model
 
     mylog = {}
+    previous_early_stop_len = len(early_stop)
     history = model.fit(array(angles_training),         # dataset part for training (features: angles)
                         array(pos_training),            # dataset part for training (labels: impact position coord)
                         batch_size=batch_size,          # dataset subsets cardinality
                         epochs=epoch,                   # subset repetition in training
                         verbose=0,
                         validation_split=0.1,           # % subset of the training set for validation (leave-one-out,k-fold)
-                        callbacks=[EarlyStopping(monitor='val_loss',verbose=True),History()])
-
+                        callbacks=[EarlyStopping(monitor='val_loss',verbose=True,handler=my_handler)])
+    
+    
     # evaluate the model
     scores = model.evaluate(array(angles_test),         # dataset part for test (features: angles)
                             array(pos_test),            # dataset control of predictions: labels 
                             batch_size=None)            # evaluation batch (None=default=32)
-    
-    print("\nTest loss: {}".format(scores))
 
-    return scores
+    if (len(early_stop)>previous_early_stop_len):
+        stop = early_stop[-1]
+        early_stop = []
+        return scores,stop
+    else:
+        return scores,None
     
 
 def main(args):
@@ -94,9 +105,9 @@ def main(args):
                 for epoch in range(10,100,20):
                     logging.info('running experiment with ts={}\tbs={}\tneu={}\taf={}\topt={}\tepoch={}'.format(ts,bs,neu,af,opt,epoch))
                     start_time=time()
-                    loss=run_experiment(angles,positions,ts, bs, neu, af, opt, epoch)
+                    loss,stop=run_experiment(angles,positions,ts, bs, neu, af, opt, epoch)
                     elapsed_time=(time()-start_time)*1000
-                    line_storage.append(ExperimentResult(ts,bs,neu,af,opt,epoch,loss,elapsed_time))
+                    line_storage.append(ExperimentResult(ts,bs,neu,af,opt,epoch,loss,elapsed_time,stop))
        
     
     line_storage.sort(key = lambda x: x.loss)
