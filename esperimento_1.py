@@ -75,7 +75,7 @@ def run_experiment(angles,positions,test_size, batch_size, neurons, activation, 
                         epochs=epoch,                   # subset repetition in training
                         verbose=0,
                         validation_split=0.1,           # % subset of the training set for validation (leave-one-out,k-fold)
-                        callbacks=[EarlyStopping(monitor='val_loss',verbose=True,handler=my_handler)])
+                        callbacks=[EarlyStopping(monitor='val_loss',patience=3,verbose=True,handler=my_handler)])
     
     
     # evaluate the model
@@ -93,16 +93,16 @@ def run_experiment(angles,positions,test_size, batch_size, neurons, activation, 
 
 def main(args):
     logging.info('parsing angles file')
-    angles=config.parse_csv('./a.csv')
-    positions=config.parse_csv('./iX.csv')
+    angles=config.parse_csv('C:/Users/Francesco/Documents/Work/ImpactExperiment/a.csv')
+    positions=config.parse_csv('C:/Users/Francesco/Documents/Work/ImpactExperiment/iX.csv')
     line_storage = []
     
     af=args['activation-function']
     opt=args['optimizator']
-    for ts in range(20,50,20):
-        for bs in range(1,40,20):
-            for neu in range(20,100,20):
-                for epoch in range(10,100,20):
+    for ts in [25,30,35]:
+        for bs in [1,int(ts/2),ts]:
+            for neu in range(4,20,4):
+                for epoch in [5,10,50]:
                     logging.info('running experiment with ts={}\tbs={}\tneu={}\taf={}\topt={}\tepoch={}'.format(ts,bs,neu,af,opt,epoch))
                     start_time=time()
                     loss,stop=run_experiment(angles,positions,ts, bs, neu, af, opt, epoch)
@@ -111,9 +111,7 @@ def main(args):
        
     
     line_storage.sort(key = lambda x: x.loss)
-    with open('./results.txt','w') as results:
-        for item in line_storage:
-            results.write(item.toString())
+    config.printResults('./results_{}_0.txt'.format(af),line_storage)
     return 0
 
 if __name__ == '__main__':

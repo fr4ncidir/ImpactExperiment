@@ -84,3 +84,14 @@ class ExperimentResult:
             self.loss,
             self.elapsed_time,
             self.early_stop)
+            
+    def toList(self):
+        return [self.ts,
+            self.bs,
+            self.neu,
+            self.af,
+            self.opt,
+            self.epoch,
+            self.loss,
+            self.elapsed_time,
+            self.early_stop]

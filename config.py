@@ -22,6 +22,7 @@
 #  
 #  
 import csv
+import prettytable
 
 
 def parse_csv (path_to_file) :
@@ -88,4 +89,9 @@ def plot_history (history):
     plt.show()
 
 
-#def myaccuracy(mytrue,myprediction):
+def printResults(fileName,results):
+    prettyResults = prettytable.PrettyTable(["testsize","batchsize","neurons","activation","optimizer","epoch","loss","time","stop"])
+    for item in results:
+        prettyResults.add_row(item.toList())
+    with open(fileName,'w') as results:
+        results.write(str(prettyResults))
