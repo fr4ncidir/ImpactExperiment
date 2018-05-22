@@ -35,6 +35,7 @@ import config
 from experiment_result import *
 from time import time
 from custom_callbacks import EarlyStopping
+from math import isnan
 
 logging.basicConfig(format='%(levelname)s %(asctime)-15s %(message)s',level=logging.INFO)
 early_stop = []
@@ -92,13 +93,14 @@ def run_experiment(angles,positions,test_size, batch_size, neurons, activation, 
     
 
 def main(args):
-    logging.info('parsing angles file')
-    angles=config.parse_csv('C:/Users/Francesco/Documents/Work/ImpactExperiment/a.csv')
-    positions=config.parse_csv('C:/Users/Francesco/Documents/Work/ImpactExperiment/iX.csv')
-    line_storage = []
-    
     af=args['activation-function']
     opt=args['optimizator']
+    level=args['level']
+    logging.info('parsing angles file')
+    angles=config.parse_csv('./livello_{}/a.csv'.format(level))
+    positions=config.parse_csv('./livello_{}/iX.csv'.format(level))
+    line_storage = []
+    
     for ts in [25,30,35]:
         for bs in [1,int(ts/2),ts]:
             for neu in range(4,20,4):
@@ -106,12 +108,14 @@ def main(args):
                     logging.info('running experiment with ts={}\tbs={}\tneu={}\taf={}\topt={}\tepoch={}'.format(ts,bs,neu,af,opt,epoch))
                     start_time=time()
                     loss,stop=run_experiment(angles,positions,ts, bs, neu, af, opt, epoch)
+                    if isnan(loss):
+                        raise ValueError("Nan caught!")
                     elapsed_time=(time()-start_time)*1000
                     line_storage.append(ExperimentResult(ts,bs,neu,af,opt,epoch,loss,elapsed_time,stop))
        
     
     line_storage.sort(key = lambda x: x.loss)
-    config.printResults('./results_{}_0.txt'.format(af),line_storage)
+    config.printResults('./results_{}_{}_{}.txt'.format(af,opt,level),line_storage)
     return 0
 
 if __name__ == '__main__':
@@ -122,6 +126,9 @@ if __name__ == '__main__':
                         help="funzioni di attivazione per la rete test")
     parser.add_argument("optimizator", choices=['sgd', 'adagrad','adam'],
                         help="funzioni di ottimizzazione")
+    parser.add_argument("level", choices=["0","1","2"],
+                        help="Approssimazione",
+                        default=0)
     args = vars(parser.parse_args())
 
     config.configurations()
