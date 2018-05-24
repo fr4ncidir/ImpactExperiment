@@ -3,7 +3,8 @@
 #
 #  esperimento_1.py
 #  
-#  Copyright 2018 Eugenio <eugenio@eugenio-VirtualBox>
+#  Copyright 2018   Francesco Antoniazzi <francesco.antoniazzi@unibo.it>
+#                   Eugenio Rossini <eugenio.rossini@studio.unibo.it>
 #  
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -22,48 +23,11 @@
 #  
 #  
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
-import os
-import csv
-import six
-
 import numpy as np
-import time
-import json
-import warnings
 
 from keras.callbacks import Callback
-# from collections import deque
-# from collections import OrderedDict
-# from collections import Iterable
-# from .utils.generic_utils import Progbar
-# from . import backend as K
+from time import sleep
 
-try:
-    import requests
-except ImportError:
-    requests = None
-
-class History(Callback):
-    """Callback that records events into a `History` object.
-
-    This callback is automatically applied to
-    every Keras model. The `History` object
-    gets returned by the `fit` method of models.
-    """
-
-    def on_train_begin(self, logs=None):
-        self.epoch = []
-        self.history = {}
-
-    def on_epoch_end(self, epoch, logs=None):
-        logs = logs or {}
-        self.epoch.append(epoch)
-        for k, v in logs.items():
-            self.history.setdefault(k, []).append(v)
 
 class EarlyStopping(Callback):
     """Stop training when a monitored quantity has stopped improving.
@@ -95,8 +59,7 @@ class EarlyStopping(Callback):
                  patience=0,
                  verbose=0,
                  mode='auto',
-                 baseline=None,
-                 handler=None):
+                 baseline=None):
         super(EarlyStopping, self).__init__()
 
         self.output_msg = ""
@@ -107,7 +70,6 @@ class EarlyStopping(Callback):
         self.min_delta = min_delta
         self.wait = 0
         self.stopped_epoch = 0
-        self.handler = handler
 
         if mode not in ['auto', 'min', 'max']:
             warnings.warn('EarlyStopping mode %s is unknown, '
@@ -160,6 +122,9 @@ class EarlyStopping(Callback):
     def on_train_end(self, logs=None):
         if self.stopped_epoch > 0 and self.verbose > 0:
             self.output_msg = 'Epoch %05d: early stopping' % (self.stopped_epoch + 1)
-            if not self.handler is None:
-                self.handler(self.stopped_epoch + 1)
             print(self.output_msg) 
+
+    def get_stopped_epoch(self):
+        if self.stopped_epoch > 0:
+            return self.stopped_epoch+1
+        return "No"

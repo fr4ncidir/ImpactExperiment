@@ -3,7 +3,8 @@
 #
 #  experiment_result.py
 #  
-#  Copyright 2018 Francesco Antoniazzi <francesco.antoniazzi1991@gmail.com>
+#  Copyright 2018   Francesco Antoniazzi <francesco.antoniazzi@unibo.it>
+#                   Eugenio Rossini <eugenio.rossini@studio.unibo.it>
 #  
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -26,16 +27,15 @@
 class ExperimentResult:
     """A class containing the result of an experiment"""
     
-    def __init__(self,ts,bs,neu,af,opt,epoch,loss,elapsed_time,early_stop):
+    def __init__(self,ts,bs,neu,epoch,loss,elapsed_time,early_stop,history):
         self._ts = ts
         self._bs = bs
         self._neu = neu
-        self._af = af
-        self._opt = opt
         self._epoch = epoch
         self._loss = loss
         self._elapsed_time = elapsed_time
         self._early_stop = early_stop
+        self._history = history
         
     @property
     def ts(self):
@@ -48,14 +48,6 @@ class ExperimentResult:
     @property
     def neu(self):
         return self._neu
-        
-    @property
-    def af(self):
-        return self._af
-        
-    @property
-    def opt(self):
-        return self._opt
         
     @property
     def epoch(self):
@@ -73,25 +65,34 @@ class ExperimentResult:
     def early_stop(self):
         return self._early_stop
         
+    @property
+    def history(self):
+        return self._history
+        
     def toString(self):
         return "ts={}\tbs={}\tneu={}\taf={}\topt={}\tepoch={}\tloss={}\telapsed={}\tearly_stop={}\n".format(
             self.ts,
             self.bs,
             self.neu,
-            self.af,
-            self.opt,
             self.epoch,
             self.loss,
             self.elapsed_time,
             self.early_stop)
             
-    def toList(self):
-        return [self.ts,
-            self.bs,
-            self.neu,
-            self.af,
-            self.opt,
-            self.epoch,
-            self.loss,
-            self.elapsed_time,
-            self.early_stop]
+    def toList(self,index=None):
+        if index is None:
+            return [self.ts,
+                self.bs,
+                self.neu,
+                self.epoch,
+                self.loss,
+                self.elapsed_time,
+                self.early_stop]
+        return [index,
+                self.ts,
+                self.bs,
+                self.neu,
+                self.epoch,
+                self.loss,
+                self.elapsed_time,
+                self.early_stop]

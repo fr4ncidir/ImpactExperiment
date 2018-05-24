@@ -3,7 +3,8 @@
 #
 #  config.py
 #  
-#  Copyright 2018 Eugenio <eugenio@eugenio-VirtualBox>
+#  Copyright 2018   Francesco Antoniazzi <francesco.antoniazzi@unibo.it>
+#                   Eugenio Rossini <eugenio.rossini@studio.unibo.it>
 #  
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -22,8 +23,6 @@
 #  
 #  
 import csv
-import prettytable
-
 
 def parse_csv (path_to_file) :
     with open(path_to_file, 'r') as matlabfile :
@@ -67,18 +66,10 @@ def configurations ():
     bK.set_session(sess)
 
     os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' #Hide messy TensorFlow warnings
-    warnings.filterwarnings("ignore") #Hide messy Numpy warnings	
+    warnings.filterwarnings("ignore") #Hide messy Numpy warnings
 
-def plot_history (history):
+def plot_history(history):
     import matplotlib.pyplot as plt
-    # summarize history for accuracy
-    plt.plot(history.history['acc'])
-    plt.plot(history.history['val_acc'])
-    plt.title('model accuracy')
-    plt.ylabel('accuracy')
-    plt.xlabel('epoch')
-    plt.legend(['train', 'test'], loc='upper left')
-    plt.show()
     # summarize history for loss
     plt.plot(history.history['loss'])
     plt.plot(history.history['val_loss'])
@@ -88,10 +79,18 @@ def plot_history (history):
     plt.legend(['train', 'test'], loc='upper left')
     plt.show()
 
-
-def printResults(fileName,results):
-    prettyResults = prettytable.PrettyTable(["testsize","batchsize","neurons","activation","optimizer","epoch","loss","time","stop"])
-    for item in results:
-        prettyResults.add_row(item.toList())
+def printResults(fileName,results,sTime,eTime,af,opt,approx):
+    import prettytable
+    from datetime import datetime as dt
+    prettyResults = prettytable.PrettyTable(["index","testsize","batchsize","neurons","epoch","loss","time [ms]","early stop"])
+    for index,item in enumerate(results):
+        prettyResults.add_row(item.toList(index))
     with open(fileName,'w') as results:
+        results.write("Start Time: {}\nEnd Time: {}\nElapsed: {} [s]\nActivation:\t{}\nOptimizer:\t{}\nApproximation:\t{}\n\n".format(
+            dt.fromtimestamp(sTime).strftime("%H:%M:%S %d-%m-%Y"),
+            dt.fromtimestamp(eTime).strftime("%H:%M:%S %d-%m-%Y"),
+            eTime-sTime,
+            af,
+            opt,
+            approx))
         results.write(str(prettyResults))
