@@ -85,12 +85,12 @@ def printResults(fileName,results,sTime,eTime,af,opt,approx):
     prettyResults = prettytable.PrettyTable(["index","testsize","batchsize","neurons","epoch","loss","time [ms]","early stop"])
     for index,item in enumerate(results):
         prettyResults.add_row(item.toList(index))
-    with open(fileName,'w') as results:
-        results.write("Start Time: {}\nEnd Time: {}\nElapsed: {} [s]\nActivation:\t{}\nOptimizer:\t{}\nApproximation:\t{}\n\n".format(
+    with open(fileName,'w') as _results:
+        _results.write("Start Time: {}\nEnd Time: {}\nElapsed: {} [s]\nActivation:\t{}\nOptimizer:\t{}\nApproximation:\t{}\n\n".format(
             dt.fromtimestamp(sTime).strftime("%H:%M:%S %d-%m-%Y"),
             dt.fromtimestamp(eTime).strftime("%H:%M:%S %d-%m-%Y"),
             eTime-sTime,
             af,
             opt,
             approx))
-        results.write(str(prettyResults))
+        _results.write(str(prettyResults))

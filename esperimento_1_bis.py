@@ -44,6 +44,10 @@ def run_experiment(angles_training,angles_test,pos_training,pos_test, batch_size
                     input_dim=4,                # 4 angles -> 4 inputs
                     activation=activation)      # activation function: sigmoid, tanh, relu
                 )
+    
+    model.add(Dense(int(neurons/2),
+                    activation=activation))
+    
     model.add(Dense(2,                          # needing 2 outputs, the second level only has 2 neurons
         activation=activation)                  # activation function of the second level
         )
@@ -104,16 +108,16 @@ def main(args):
                             logging.warning("Loss = NaN detected")
                         deltaT=(time()-sTime)*1000
                         line_storage.append(ExperimentResult(ts,bs,neu,epoch,loss,deltaT,stop,history))
-        resultsFileName = './livello_{}/results_{}_{}_{}.txt'.format(level,af,opt,level)
+        resultsFileName = './livello_{}/results_{}_{}_{}_bis.txt'.format(level,af,opt,level)
     except KeyboardInterrupt:
         logging.warning("KeyboardInterrupt")
-        resultsFileName = './livello_{}/results_{}_{}_{}_keyboard.txt'.format(level,af,opt,level)
+        resultsFileName = './livello_{}/results_{}_{}_{}_keyboard_bis.txt'.format(level,af,opt,level)
     finally:
         line_storage.sort(key = lambda x: x.loss)
         config.printResults(resultsFileName,line_storage,simulation_tStart,time(),af,opt,args["approximation"])
     
     if args["p"]:
-        print("Plot best experiment loss history: \n{}".format(line_storage[0].toString()))
+        print("Plot best experiment loss history ({})".format(line_storage[0].toString()))
         config.plot_history(line_storage[0].history)
     
     return 0 

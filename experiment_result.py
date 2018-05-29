@@ -70,7 +70,7 @@ class ExperimentResult:
         return self._history
         
     def toString(self):
-        return "ts={}\tbs={}\tneu={}\taf={}\topt={}\tepoch={}\tloss={}\telapsed={}\tearly_stop={}\n".format(
+        return "ts={}\tbs={}\tneu={}\tepoch={}\tloss={}\telapsed={}\tearly_stop={}\n".format(
             self.ts,
             self.bs,
             self.neu,
