@@ -104,10 +104,10 @@ def main(args):
                             logging.warning("Loss = NaN detected")
                         deltaT=(time()-sTime)*1000
                         line_storage.append(ExperimentResult(ts,bs,neu,epoch,loss,deltaT,stop,history))
-        resultsFileName = './livello_{}/results_{}_{}_{}.txt'.format(level,af,opt,level)
+        resultsFileName = './e1/livello_{}/results_{}_{}_{}.txt'.format(level,af,opt,level)
     except KeyboardInterrupt:
         logging.warning("KeyboardInterrupt")
-        resultsFileName = './livello_{}/results_{}_{}_{}_keyboard.txt'.format(level,af,opt,level)
+        resultsFileName = './e1/livello_{}/results_{}_{}_{}_keyboard.txt'.format(level,af,opt,level)
     finally:
         line_storage.sort(key = lambda x: x.loss)
         config.printResults(resultsFileName,line_storage,simulation_tStart,time(),af,opt,args["approximation"])
