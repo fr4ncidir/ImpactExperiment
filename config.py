@@ -23,6 +23,8 @@
 #  
 #  
 import csv
+import numpy as np
+import prettytable
 
 def parse_csv (path_to_file) :
     with open(path_to_file, 'r') as matlabfile :
@@ -36,7 +38,6 @@ def parse_csv (path_to_file) :
     return output
 	
 def configurations ():
-    import numpy as np
     import os
     import warnings
     import tensorflow as tf
@@ -68,7 +69,7 @@ def configurations ():
     os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' #Hide messy TensorFlow warnings
     warnings.filterwarnings("ignore") #Hide messy Numpy warnings
 
-def plot_history(history):
+def plot_history(history,file_dest=None):
     import matplotlib.pyplot as plt
     # summarize history for loss
     plt.plot(history.history['loss'])
@@ -77,10 +78,12 @@ def plot_history(history):
     plt.ylabel('loss')
     plt.xlabel('epoch')
     plt.legend(['train', 'test'], loc='upper left')
+    if file_dest is not None:
+        plt.savefig(file_dest)
     plt.show()
+    
 
 def printResults(fileName,results,sTime,eTime,af,opt,approx):
-    import prettytable
     from datetime import datetime as dt
     prettyResults = prettytable.PrettyTable(["index","testsize","batchsize","neurons","epoch","loss","time [ms]","early stop"])
     for index,item in enumerate(results):
@@ -94,3 +97,25 @@ def printResults(fileName,results,sTime,eTime,af,opt,approx):
             opt,
             approx))
         _results.write(str(prettyResults))
+        
+def tableweight(experiment_layer):
+    resultList = experiment_layer[0].tolist()
+    biasList = experiment_layer[1].tolist()
+    prettyWeights = ["Description"]
+    for index in range(len(resultList[0])):
+        prettyWeights.append("Neuron{}".format(index+1))
+        
+    prettyWeightTable = prettytable.PrettyTable(prettyWeights)
+    for index,item in enumerate(resultList):
+        prettyWeightTable.add_row(["Input{}".format(index+1)]+item)
+    prettyWeightTable.add_row(["Bias"]+biasList)
+    return str(prettyWeightTable)
+
+def save_weights(experiment,file_dest=None):
+    assert file_dest is not None
+    with open(file_dest,"w") as weight_file:
+        weight_file.write("\nFirst layer weights:\n")
+        weight_file.write(tableweight(experiment.wLayer1))
+        
+        weight_file.write("\nSecond layer weights:\n")
+        weight_file.write(tableweight(experiment.wLayer2))

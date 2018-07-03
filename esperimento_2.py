@@ -27,8 +27,7 @@ from keras.callbacks import TerminateOnNaN
 from keras.layers import Dense
 from keras.models import Sequential
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import confusion_matrix
-from numpy import array
+from numpy import array,zeros,argmax,set_printoptions,nan
 import logging
 import config 
 from experiment_result import *
@@ -38,21 +37,33 @@ from math import isnan
 import copy
 
 logging.basicConfig(format='%(levelname)s %(asctime)-15s %(message)s',level=logging.INFO)
+c_matrix = None
 
 def piastrella(coord,lato_x,lato_y,griglia):
     k_x = 0
     k_y = 0
+    #print(coord)
     for a in range(0,griglia):
+        # print(a*lato_x)
+        # print((a+1)*lato_x)
         if a*lato_x<=coord[0]<(a+1)*lato_x:
             k_x = a
             break
+    #print(k_x)
     for a in range(0,griglia):
         if a*lato_y<=coord[1]<(a+1)*lato_y:
             k_y = a
             break
     vector = [0]*(griglia**2)
-    vector[k_x*k_y]=1
+    vector[k_x+griglia*k_y]=1
+    #sys.exit(0)
     return vector
+    
+def confusion_matrix(test,predictions,griglia):
+    for index in range(0,test.shape[0]):
+        c_matrix[argmax(predictions[index]),argmax(test[index])] += 1 
+    return c_matrix
+    
 
 def run_experiment(angles_training,angles_test,pos_training,pos_test, batch_size, neurons, activation, optimization, epoch, griglia):
     # create model
@@ -91,7 +102,16 @@ def run_experiment(angles_training,angles_test,pos_training,pos_test, batch_size
                             batch_size=None)            # evaluation batch (None=default=32)
     
     predictions = model.predict(array(angles_test))
-    print(confusion_matrix(array(pos_test[0]),predictions))
+    print(predictions.shape)
+    #print(array(pos_test),file=open("./pos_test.txt","w"))
+    
+    # print(argmax(predictions,axis=0))
+    # print(argmax(predictions,axis=0).shape)
+    # print("\n\n")
+    #print(argmax(array(pos_test),axis=0))
+    # print(argmax(array(pos_test),axis=0).shape)
+    # print("\n\n")
+    print(confusion_matrix(array(pos_test),predictions,griglia),file=open("./confusion.txt","w"))
     sys.exit(1)
     
     
@@ -100,6 +120,8 @@ def run_experiment(angles_training,angles_test,pos_training,pos_test, batch_size
 
 
 def main(args):
+    global c_matrix
+    set_printoptions(threshold=nan)
     af=args['activation-function']
     opt=args['optimizator']
     level=["ideal","noref","ref"].index(args['approximation'])
@@ -110,13 +132,17 @@ def main(args):
     pos_copy = copy.deepcopy(positions)
     pos_copy.sort(key = lambda x: x[0])
     
-    lato_x = (pos_copy[0][0]-pos_copy[-1][0])/(int(args["k"])-1)
-    lato_y = (pos_copy[0][1]-pos_copy[-1][1])/(int(args["k"])-1)
+    lato_x = (pos_copy[-1][0]-pos_copy[0][0])/(int(args["k"])-1)
+    lato_y = (pos_copy[-1][1]-pos_copy[0][1])/(int(args["k"])-1)
     modulo_griglia = int(args["k"])
+    c_matrix = zeros((modulo_griglia**2,modulo_griglia**2))
     
+    #print(positions)
     vettori = []
     for item in positions:
         vettori.append(piastrella(item,lato_x,lato_y,modulo_griglia))
+        
+    #print(argmax(array(vettori),axis=1))
     
     line_storage = []
     resultsFileName = "temp.txt"

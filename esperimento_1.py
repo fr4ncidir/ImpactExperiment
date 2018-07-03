@@ -28,27 +28,30 @@ from keras.layers import Dense
 from keras.models import Sequential
 from sklearn.model_selection import train_test_split
 from numpy import array
+from numpy.linalg import norm
 import logging
 import config 
 from experiment_result import *
 from time import time
 from custom_callbacks import EarlyStopping
-from math import isnan
+from math import isnan,sqrt
+from sklearn.metrics import mean_squared_error
 
 logging.basicConfig(format='%(levelname)s %(asctime)-15s %(message)s',level=logging.INFO)
 
 def run_experiment(angles_training,angles_test,pos_training,pos_test, batch_size, neurons, activation, optimization, epoch):
     # create model
     model = Sequential()
-    model.add(Dense(neurons,                    # neuron number of first level
+    layer1 = Dense(neurons,                    # neuron number of first level
                     input_dim=4,                # 4 angles -> 4 inputs
                     activation=activation)      # activation function: sigmoid, tanh, relu
-                )
-    model.add(Dense(2,                          # needing 2 outputs, the second level only has 2 neurons
-        activation=activation)                  # activation function of the second level
-        )
+    model.add(layer1)
+    
+    layer2 = Dense( 2,                          # needing 2 outputs, the second level only has 2 neurons
+                    activation=activation)      # activation function of the second level
+    model.add(layer2)
 
-    #compile model
+    #compile model 
     model.compile(loss='mean_squared_error',            # loss function for training evolution
                   optimizer=optimization)               # optimization fuction: sgd, adagrad, adam
 
@@ -72,8 +75,23 @@ def run_experiment(angles_training,angles_test,pos_training,pos_test, batch_size
                             verbose=0,
                             batch_size=None)            # evaluation batch (None=default=32)
     stop = earlystop_callback.get_stopped_epoch()
-    return scores,stop,history
-
+    
+    # Uncomment here to see predicted (x,y) and mse.
+    mypredictions = model.predict(array(angles_test),verbose=1)
+    sum_losses = 0
+    print("Predictions\t::\tLabels\t::\tLoss")
+    for index in range(len(mypredictions)):
+        myloss= norm(mypredictions[index]-pos_test[index])**2/len(pos_test[index])
+        print(str(mypredictions[index])+"\t::\t"+str(pos_test[index])+"\t::\t"+str(myloss))
+        sum_losses += myloss
+    print(index)
+    print("The keras-calculated loss is: {}".format(scores))
+    print("The hand-made-calculated loss(sklearn) is: {}".format(mean_squared_error(mypredictions,pos_test)))
+    print("The hand-made-calculated loss is: {}".format(sum_losses/(index+1)))
+    print("The hand-made-calculated loss(root) is: {}".format(sqrt(sum_losses/(index+1))))
+    input("stop here! ")
+    
+    return scores,stop,history,[layer1.get_weights(),layer2.get_weights()]
 
 def main(args):
     af=args['activation-function']
@@ -81,8 +99,8 @@ def main(args):
     level=["ideal","noref","ref"].index(args['approximation'])
     
     logging.info('parsing angles file')
-    angles=config.parse_csv('./livello_{}/a.csv'.format(level))
-    positions=config.parse_csv('./livello_{}/iX.csv'.format(level))
+    angles=config.parse_csv('./livello_{}/a_{}.csv'.format(level,args['approximation']))
+    positions=config.parse_csv('./livello_{}/iX_{}.csv'.format(level,args['approximation']))
     line_storage = []
     resultsFileName = "temp.txt"
     
@@ -99,22 +117,25 @@ def main(args):
                     for epoch in [5,10,50]:
                         logging.info('running experiment with ts={}\tbs={}\tneu={}\taf={}\topt={}\tepoch={}'.format(ts,bs,neu,af,opt,epoch))
                         sTime=time()
-                        loss,stop,history=run_experiment(angles_training, angles_test, pos_training, pos_test, bs, neu, af, opt, epoch)
+                        loss,stop,history,weights=run_experiment(angles_training, angles_test, pos_training, pos_test, bs, neu, af, opt, epoch)
                         if isnan(loss):
                             logging.warning("Loss = NaN detected")
                         deltaT=(time()-sTime)*1000
-                        line_storage.append(ExperimentResult(ts,bs,neu,epoch,loss,deltaT,stop,history))
-        resultsFileName = './e1/livello_{}/results_{}_{}_{}.txt'.format(level,af,opt,level)
+                        line_storage.append(ExperimentResult(ts,bs,neu,epoch,loss,deltaT,stop,history,weights))
+        resultsFileName = './livello_{}/e1/results_{}_{}_{}.txt'.format(level,af,opt,level)
     except KeyboardInterrupt:
         logging.warning("KeyboardInterrupt")
-        resultsFileName = './e1/livello_{}/results_{}_{}_{}_keyboard.txt'.format(level,af,opt,level)
+        resultsFileName = './livello_{}/e1/results_{}_{}_{}_keyboard.txt'.format(level,af,opt,level)
     finally:
         line_storage.sort(key = lambda x: x.loss)
         config.printResults(resultsFileName,line_storage,simulation_tStart,time(),af,opt,args["approximation"])
     
     if args["p"]:
         print("Plot best experiment loss history: \n{}".format(line_storage[0].toString()))
-        config.plot_history(line_storage[0].history)
+        config.plot_history(line_storage[0].history,file_dest=resultsFileName.replace("/e1/","/e1/FIG_").replace(".txt",".png"))
+        
+    print("Saving weights...")
+    config.save_weights(line_storage[0],file_dest=resultsFileName.replace("/e1/","/e1/WEIGHTS_"))
     
     return 0 
 

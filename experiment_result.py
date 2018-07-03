@@ -27,7 +27,7 @@
 class ExperimentResult:
     """A class containing the result of an experiment"""
     
-    def __init__(self,ts,bs,neu,epoch,loss,elapsed_time,early_stop,history):
+    def __init__(self,ts,bs,neu,epoch,loss,elapsed_time,early_stop,history,weights):
         self._ts = ts
         self._bs = bs
         self._neu = neu
@@ -36,6 +36,7 @@ class ExperimentResult:
         self._elapsed_time = elapsed_time
         self._early_stop = early_stop
         self._history = history
+        self._weights = weights
         
     @property
     def ts(self):
@@ -68,6 +69,14 @@ class ExperimentResult:
     @property
     def history(self):
         return self._history
+        
+    @property
+    def wLayer1(self):
+        return self._weights[0]
+        
+    @property
+    def wLayer2(self):
+        return self._weights[1]
         
     def toString(self):
         return "ts={}\tbs={}\tneu={}\tepoch={}\tloss={}\telapsed={}\tearly_stop={}\n".format(
